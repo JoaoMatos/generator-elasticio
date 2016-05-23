@@ -11,34 +11,32 @@ module.exports.process = processAction;
  * @param msg incoming message object that contains ``body`` with payload
  * @param cfg configuration that is account information and configuration field values
  */
-function processAction(msg, cfg) {
-  var self = this;
-  var name = cfg.name;
-
+function process(msg, conf, next) {
   function emitData() {
-    console.log('About to say hello to ' + name + ' again');
+    var body = '{}';
+    var message = messages.newMessageWithBody(body);
 
-    var body = {
-      greeting: name + ' How are you today?',
-      originalGreeting: msg.body.greeting
-    };
+    console.log(message);
 
-    var data = messages.newMessageWithBody(body);
-
-    self.emit('data', data);
+    this.emit('data', message);
   }
 
-  function emitError(e) {
-    console.log('Oops! Error occurred');
+  function emitError(error) {
+    console.log('An error occurred');
 
-    self.emit('error', e);
+    this.emit('error', error);
   }
 
   function emitEnd() {
     console.log('Finished execution');
 
-    self.emit('end');
+    this.emit('end');
   }
 
-  Q().then(emitData).fail(emitError).done(emitEnd);
+  Q()
+    .then(emitData.bind(this))
+    .fail(emitError.bind(this))
+    .done(emitEnd.bind(this));
 }
+
+exports.process = process;
